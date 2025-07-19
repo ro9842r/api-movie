@@ -1,7 +1,11 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosResponse, AxiosError } from 'axios';
-import { SearchMovieDto, SearchMovieResponseDto } from './dto/search-movie.dto';
+import {
+  SearchMovieDto,
+  SearchMovieResponseDto,
+  GenresResponseDto,
+} from './dto/search-movie.dto';
 
 @Injectable()
 export class MoviesService {
@@ -64,6 +68,32 @@ export class MoviesService {
 
       throw new HttpException(
         'Internal server error while searching movies',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getGenres(): Promise<GenresResponseDto> {
+    try {
+      const params = {
+        api_key: this.apiKey,
+      };
+
+      const response: AxiosResponse<GenresResponseDto> = await axios.get(
+        `${this.baseUrl}/genre/movie/list`,
+        { params },
+      );
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        const status = axiosError.response?.status || HttpStatus.BAD_REQUEST;
+        throw new HttpException('Error fetching genres', status);
+      }
+
+      throw new HttpException(
+        'Internal server error while fetching genres',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

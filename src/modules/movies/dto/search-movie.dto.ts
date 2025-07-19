@@ -30,3 +30,12 @@ export class SearchMovieResponseDto {
   total_pages: number;
   total_results: number;
 }
+
+export class GenreDto {
+  id: number;
+  name: string;
+}
+
+export class GenresResponseDto {
+  genres: GenreDto[];
+}

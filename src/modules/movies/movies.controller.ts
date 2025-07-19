@@ -1,6 +1,10 @@
 import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { MoviesService } from './movies.service';
-import { SearchMovieDto, SearchMovieResponseDto } from './dto/search-movie.dto';
+import {
+  SearchMovieDto,
+  SearchMovieResponseDto,
+  GenresResponseDto,
+} from './dto/search-movie.dto';
 
 @Controller('movies')
 export class MoviesController {
@@ -15,5 +19,10 @@ export class MoviesController {
     }
 
     return await this.moviesService.searchMoviesByName(searchParams);
+  }
+
+  @Get('genres')
+  async getGenres(): Promise<GenresResponseDto> {
+    return await this.moviesService.getGenres();
   }
 }
