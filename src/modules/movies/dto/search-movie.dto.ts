@@ -1,9 +1,26 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class SearchMovieDto {
   @IsString()
   @IsNotEmpty()
   query: string;
+}
+
+export class DiscoverMoviesDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  year?: number;
+
+  @IsOptional()
+  @IsString()
+  with_genres?: string;
 }
 
 export class MovieDto {

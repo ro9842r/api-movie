@@ -6,6 +6,7 @@ import {
   SearchMovieDto,
   SearchMovieResponseDto,
   GenresResponseDto,
+  DiscoverMoviesDto,
 } from './dto/search-movie.dto';
 
 @Injectable()
@@ -47,5 +48,70 @@ export class MoviesService {
     );
 
     return { genres };
+  }
+
+  async getPopularMovies(page: number = 1): Promise<SearchMovieResponseDto> {
+    return firstValueFrom(
+      this.httpService
+        .get<SearchMovieResponseDto>('/movie/popular', {
+          params: { page },
+        })
+        .pipe(
+          map((response) => response.data),
+          catchError((error: AxiosError) => {
+            const status = error.response?.status || HttpStatus.BAD_REQUEST;
+            const message = 'Error fetching popular movies';
+            return throwError(() => new HttpException(message, status));
+          }),
+        ),
+    );
+  }
+
+  async getNowPlayingMovies(page: number = 1): Promise<SearchMovieResponseDto> {
+    return firstValueFrom(
+      this.httpService
+        .get<SearchMovieResponseDto>('/movie/now_playing', {
+          params: { page },
+        })
+        .pipe(
+          map((response) => response.data),
+          catchError((error: AxiosError) => {
+            const status = error.response?.status || HttpStatus.BAD_REQUEST;
+            const message = 'Error fetching now playing movies';
+            return throwError(() => new HttpException(message, status));
+          }),
+        ),
+    );
+  }
+
+  async discoverMovies(
+    dto: DiscoverMoviesDto,
+  ): Promise<SearchMovieResponseDto> {
+    const { page = 1, year, with_genres } = dto;
+
+    const params: Record<string, string | number> = { page };
+
+    if (year) {
+      params.year = year;
+    }
+
+    if (with_genres) {
+      params.with_genres = with_genres;
+    }
+
+    return firstValueFrom(
+      this.httpService
+        .get<SearchMovieResponseDto>('/discover/movie', {
+          params,
+        })
+        .pipe(
+          map((response) => response.data),
+          catchError((error: AxiosError) => {
+            const status = error.response?.status || HttpStatus.BAD_REQUEST;
+            const message = 'Error discovering movies';
+            return throwError(() => new HttpException(message, status));
+          }),
+        ),
+    );
   }
 }
