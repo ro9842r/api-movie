@@ -10,25 +10,18 @@ import {
 
 @Injectable()
 export class MoviesService {
-  private readonly baseUrl = 'https://api.themoviedb.org/3';
-
   constructor(
-    @Inject('TMDB_API_KEY') private readonly apiKey: string,
+    @Inject('TMDB_HTTP_SERVICE')
     private readonly httpService: HttpService,
   ) {}
 
   async searchMoviesByName({
     query,
   }: SearchMovieDto): Promise<SearchMovieResponseDto> {
-    const params = {
-      api_key: this.apiKey,
-      query,
-    };
-
     return firstValueFrom(
       this.httpService
-        .get<SearchMovieResponseDto>(`${this.baseUrl}/search/movie`, {
-          params,
+        .get<SearchMovieResponseDto>('/search/movie', {
+          params: { query },
         })
         .pipe(
           map((response) => response.data),
@@ -43,18 +36,14 @@ export class MoviesService {
 
   async getGenres(): Promise<GenresResponseDto> {
     const { genres } = await firstValueFrom(
-      this.httpService
-        .get<GenresResponseDto>(`${this.baseUrl}/genre/movie/list`, {
-          params: { api_key: this.apiKey },
-        })
-        .pipe(
-          map((response) => response.data),
-          catchError((error: AxiosError) => {
-            const status = error.response?.status || HttpStatus.BAD_REQUEST;
-            const message = 'Error fetching genres';
-            return throwError(() => new HttpException(message, status));
-          }),
-        ),
+      this.httpService.get<GenresResponseDto>('/genre/movie/list').pipe(
+        map((response) => response.data),
+        catchError((error: AxiosError) => {
+          const status = error.response?.status || HttpStatus.BAD_REQUEST;
+          const message = 'Error fetching genres';
+          return throwError(() => new HttpException(message, status));
+        }),
+      ),
     );
 
     return { genres };
