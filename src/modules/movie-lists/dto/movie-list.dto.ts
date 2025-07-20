@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateMovieListDto {
@@ -18,7 +24,7 @@ export class CreateMovieListDto {
   @IsNotEmpty()
   genreName: string;
 
-  @IsString()
+  @IsUUID(4, { message: 'userId must be a valid UUID' })
   @IsNotEmpty()
   userId: string;
 }
