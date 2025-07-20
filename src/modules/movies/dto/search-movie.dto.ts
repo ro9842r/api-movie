@@ -55,3 +55,28 @@ export class GenreDto {
 export class GenresResponseDto {
   genres: GenreDto[];
 }
+
+export class MovieDetailsDto {
+  id: number;
+  title: string;
+  original_title: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  release_date: string;
+  runtime: number | null;
+  vote_average: number;
+  vote_count: number;
+  popularity: number;
+  adult: boolean;
+  genres: GenreDto[];
+  production_companies: {
+    id: number;
+    name: string;
+    logo_path: string | null;
+  }[];
+  budget: number;
+  revenue: number;
+  tagline: string | null;
+  homepage: string | null;
+}

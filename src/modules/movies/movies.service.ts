@@ -7,6 +7,7 @@ import {
   SearchMovieResponseDto,
   GenresResponseDto,
   DiscoverMoviesDto,
+  MovieDetailsDto,
 } from './dto/search-movie.dto';
 
 @Injectable()
@@ -112,6 +113,19 @@ export class MoviesService {
             return throwError(() => new HttpException(message, status));
           }),
         ),
+    );
+  }
+
+  async getMovieById(id: number): Promise<MovieDetailsDto> {
+    return firstValueFrom(
+      this.httpService.get<MovieDetailsDto>(`/movie/${id}`).pipe(
+        map((response) => response.data),
+        catchError((error: AxiosError) => {
+          const status = error.response?.status || HttpStatus.NOT_FOUND;
+          const message = `Movie with ID ${id} not found`;
+          return throwError(() => new HttpException(message, status));
+        }),
+      ),
     );
   }
 }

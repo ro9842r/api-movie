@@ -4,6 +4,7 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  Param,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import {
@@ -11,6 +12,7 @@ import {
   SearchMovieResponseDto,
   GenresResponseDto,
   DiscoverMoviesDto,
+  MovieDetailsDto,
 } from './dto/search-movie.dto';
 
 @Controller('movies')
@@ -48,5 +50,12 @@ export class MoviesController {
     @Query() discoverParams: DiscoverMoviesDto,
   ): Promise<SearchMovieResponseDto> {
     return await this.moviesService.discoverMovies(discoverParams);
+  }
+
+  @Get(':id')
+  async getMovieById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<MovieDetailsDto> {
+    return await this.moviesService.getMovieById(id);
   }
 }
