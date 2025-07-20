@@ -7,6 +7,7 @@ import { MoviesModule } from './modules/movies/movie.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: '.env',
       isGlobal: true,
       expandVariables: true,
     }),

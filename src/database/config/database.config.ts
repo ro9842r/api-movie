@@ -3,7 +3,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { config } from 'dotenv';
 import * as dotenvExpand from 'dotenv-expand';
 
-dotenvExpand.expand(config());
+dotenvExpand.expand(config({ path: '.env' }));
 
 export const typeormOptions = {
   type: 'postgres',
