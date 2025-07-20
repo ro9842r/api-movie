@@ -1,5 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, map, throwError } from 'rxjs';
@@ -12,14 +11,11 @@ import {
 @Injectable()
 export class MoviesService {
   private readonly baseUrl = 'https://api.themoviedb.org/3';
-  private readonly apiKey: string;
 
   constructor(
-    private readonly configService: ConfigService,
+    @Inject('TMDB_API_KEY') private readonly apiKey: string,
     private readonly httpService: HttpService,
-  ) {
-    this.apiKey = this.configService.getOrThrow<string>('TMBD_API_KEY');
-  }
+  ) {}
 
   async searchMoviesByName({
     query,
