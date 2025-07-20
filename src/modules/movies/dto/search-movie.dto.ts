@@ -1,10 +1,9 @@
+import { IsNotEmpty, IsString } from 'class-validator';
+
 export class SearchMovieDto {
+  @IsString()
+  @IsNotEmpty()
   query: string;
-  page?: number;
-  include_adult?: boolean;
-  region?: string;
-  year?: number;
-  primary_release_year?: number;
 }
 
 export class MovieDto {

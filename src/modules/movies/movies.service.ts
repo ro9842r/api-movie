@@ -18,66 +18,31 @@ export class MoviesService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    this.apiKey = this.configService.get<string>('TMBD_API_KEY') || '';
-    if (!this.apiKey) {
-      throw new Error('TMDB API key is not configured');
-    }
+    this.apiKey = this.configService.getOrThrow<string>('TMBD_API_KEY');
   }
 
-  async searchMoviesByName(
-    searchParams: SearchMovieDto,
-  ): Promise<SearchMovieResponseDto> {
-    try {
-      const {
-        query,
-        page = 1,
-        include_adult = false,
-        region,
-        year,
-        primary_release_year,
-      } = searchParams;
+  async searchMoviesByName({
+    query,
+  }: SearchMovieDto): Promise<SearchMovieResponseDto> {
+    const params = {
+      api_key: this.apiKey,
+      query,
+    };
 
-      if (!query || query.trim().length === 0) {
-        throw new HttpException(
-          'Search query is required',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      const params = {
-        api_key: this.apiKey,
-        query: query.trim(),
-        page,
-        include_adult,
-        ...(region && { region }),
-        ...(year && { year }),
-        ...(primary_release_year && { primary_release_year }),
-      };
-
-      const response = await firstValueFrom(
-        this.httpService
-          .get<SearchMovieResponseDto>(`${this.baseUrl}/search/movie`, {
-            params,
-          })
-          .pipe(
-            catchError((error: AxiosError) => {
-              const status = error.response?.status || HttpStatus.BAD_REQUEST;
-              throw new HttpException('Error searching movies', status);
-            }),
-          ),
-      );
-
-      return response.data;
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new HttpException(
-        'Internal server error while searching movies',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return firstValueFrom(
+      this.httpService
+        .get<SearchMovieResponseDto>(`${this.baseUrl}/search/movie`, {
+          params,
+        })
+        .pipe(
+          map((response) => response.data),
+          catchError((error: AxiosError) => {
+            const status = error.response?.status || HttpStatus.BAD_REQUEST;
+            const message = 'Error searching movies';
+            return throwError(() => new HttpException(message, status));
+          }),
+        ),
+    );
   }
 
   async getGenres(): Promise<GenresResponseDto> {
