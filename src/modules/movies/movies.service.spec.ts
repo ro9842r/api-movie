@@ -115,6 +115,51 @@ describe('MoviesService', () => {
     });
   });
 
+  describe('getGenreById', () => {
+    it('should return specific genre when found', async () => {
+      const mockGenres = {
+        genres: [
+          { id: 28, name: 'Action' },
+          { id: 12, name: 'Adventure' },
+        ],
+      };
+
+      mockHttpService.get.mockReturnValue(of({ data: mockGenres }));
+
+      const result = await service.getGenreById(28);
+
+      expect(result).toEqual({ id: 28, name: 'Action' });
+      expect(mockHttpService.get).toHaveBeenCalledWith('/genre/movie/list');
+    });
+
+    it('should throw HttpException when genre is not found', async () => {
+      const mockGenres = {
+        genres: [
+          { id: 28, name: 'Action' },
+          { id: 12, name: 'Adventure' },
+        ],
+      };
+
+      mockHttpService.get.mockReturnValue(of({ data: mockGenres }));
+
+      await expect(service.getGenreById(999)).rejects.toThrow(HttpException);
+      await expect(service.getGenreById(999)).rejects.toThrow(
+        'Genre with ID 999 not found',
+      );
+    });
+
+    it('should throw HttpException when getGenres fails', async () => {
+      const errorResponse = {
+        response: { status: 500 },
+        message: 'Server error',
+      };
+
+      mockHttpService.get.mockReturnValue(throwError(() => errorResponse));
+
+      await expect(service.getGenreById(28)).rejects.toThrow(HttpException);
+    });
+  });
+
   describe('getPopularMovies', () => {
     it('should return popular movies with default page', async () => {
       const mockResponse: SearchMovieResponseDto = {

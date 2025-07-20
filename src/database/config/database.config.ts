@@ -11,7 +11,6 @@ export const typeormOptions = {
   autoLoadEntities: true,
   synchronize: false,
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-  entities: ['**/*.entity.ts'],
 } as const satisfies TypeOrmModuleOptions;
 
 export default registerAs('database', () => typeormOptions);

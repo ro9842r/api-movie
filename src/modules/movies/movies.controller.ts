@@ -5,6 +5,8 @@ import {
   ParseIntPipe,
   DefaultValuePipe,
   Param,
+  UseInterceptors,
+  UseFilters,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import {
@@ -14,8 +16,12 @@ import {
   DiscoverMoviesDto,
   MovieDetailsDto,
 } from './dto/search-movie.dto';
+import { TransformInterceptor } from '@shared/interceptors/transform.interceptor';
+import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filter';
 
 @Controller('movies')
+@UseInterceptors(TransformInterceptor)
+@UseFilters(DatabaseExceptionFilter)
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 

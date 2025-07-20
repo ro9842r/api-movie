@@ -128,4 +128,19 @@ export class MoviesService {
       ),
     );
   }
+
+  async getGenreById(id: number): Promise<{ id: number; name: string }> {
+    const { genres } = await this.getGenres();
+
+    const genre = genres.find((genre) => genre.id === id);
+
+    if (!genre) {
+      throw new HttpException(
+        `Genre with ID ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return genre;
+  }
 }
