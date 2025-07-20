@@ -4,6 +4,8 @@ import {
   IsNumber,
   IsOptional,
   IsUUID,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -59,4 +61,19 @@ export class MovieListSummaryDto {
   genreName: string;
   movieCount: number;
   createdAt: Date;
+}
+
+export class PaginationQueryDto {
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  @IsOptional()
+  page?: number = 1;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  @IsOptional()
+  limit?: number = 10;
 }
