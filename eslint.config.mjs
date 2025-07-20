@@ -32,12 +32,19 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off', // Para path mappings
       '@typescript-eslint/no-unsafe-assignment': 'off', // Para path mappings
+      '@typescript-eslint/unbound-method': 'off', // Para testes Jest
       'prettier/prettier': [
         'error',
         {
           endOfLine: 'auto',
         },
       ],
+    },
+  },
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
 );
