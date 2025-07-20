@@ -1,6 +1,8 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios, { AxiosResponse, AxiosError } from 'axios';
+import { HttpService } from '@nestjs/axios';
+import { AxiosError } from 'axios';
+import { catchError, firstValueFrom, map, throwError } from 'rxjs';
 import {
   SearchMovieDto,
   SearchMovieResponseDto,
@@ -12,7 +14,10 @@ export class MoviesService {
   private readonly baseUrl = 'https://api.themoviedb.org/3';
   private readonly apiKey: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
+  ) {
     this.apiKey = this.configService.get<string>('TMBD_API_KEY') || '';
     if (!this.apiKey) {
       throw new Error('TMDB API key is not configured');
@@ -49,21 +54,23 @@ export class MoviesService {
         ...(primary_release_year && { primary_release_year }),
       };
 
-      const response: AxiosResponse<SearchMovieResponseDto> = await axios.get(
-        `${this.baseUrl}/search/movie`,
-        { params },
+      const response = await firstValueFrom(
+        this.httpService
+          .get<SearchMovieResponseDto>(`${this.baseUrl}/search/movie`, {
+            params,
+          })
+          .pipe(
+            catchError((error: AxiosError) => {
+              const status = error.response?.status || HttpStatus.BAD_REQUEST;
+              throw new HttpException('Error searching movies', status);
+            }),
+          ),
       );
 
       return response.data;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
-      }
-
-      if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError;
-        const status = axiosError.response?.status || HttpStatus.BAD_REQUEST;
-        throw new HttpException('Error searching movies', status);
       }
 
       throw new HttpException(
@@ -74,28 +81,21 @@ export class MoviesService {
   }
 
   async getGenres(): Promise<GenresResponseDto> {
-    try {
-      const params = {
-        api_key: this.apiKey,
-      };
+    const { genres } = await firstValueFrom(
+      this.httpService
+        .get<GenresResponseDto>(`${this.baseUrl}/genre/movie/list`, {
+          params: { api_key: this.apiKey },
+        })
+        .pipe(
+          map((response) => response.data),
+          catchError((error: AxiosError) => {
+            const status = error.response?.status || HttpStatus.BAD_REQUEST;
+            const message = 'Error fetching genres';
+            return throwError(() => new HttpException(message, status));
+          }),
+        ),
+    );
 
-      const response: AxiosResponse<GenresResponseDto> = await axios.get(
-        `${this.baseUrl}/genre/movie/list`,
-        { params },
-      );
-
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError;
-        const status = axiosError.response?.status || HttpStatus.BAD_REQUEST;
-        throw new HttpException('Error fetching genres', status);
-      }
-
-      throw new HttpException(
-        'Internal server error while fetching genres',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return { genres };
   }
 }
