@@ -6,7 +6,7 @@ import {
   Query,
   UseFilters,
   UseInterceptors,
-  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { MovieListsService } from './movie-lists.service';
@@ -18,7 +18,9 @@ import {
 import { MovieList } from './entities/movie-list.entity';
 import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filter';
 import { TransformInterceptor } from '@shared/interceptors/transform.interceptor';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('movie-lists')
 @UseFilters(DatabaseExceptionFilter)
 @UseInterceptors(TransformInterceptor)
@@ -34,15 +36,12 @@ export class MovieListsController {
 
   @Get()
   async findMyLists(
-    @Request() req: any,
     @Query() paginationQuery: PaginationQueryDto,
   ): Promise<Pagination<MovieList>> {
-    const userId = req.user.id;
-
     const options = {
       page: paginationQuery.page || 1,
       limit: paginationQuery.limit || 10,
     };
-    return this.movieListsService.findByUserId(userId, options);
+    return this.movieListsService.findByUserId(options);
   }
 }

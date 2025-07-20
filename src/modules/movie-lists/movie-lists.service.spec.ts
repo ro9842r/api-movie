@@ -55,7 +55,6 @@ describe('MovieListsService', () => {
     const createListDto: CreateMovieListDto = {
       name: 'My Favorite Movies',
       description: 'A list of my favorite action movies',
-      userId: '123e4567-e89b-12d3-a456-426614174000',
       genreId: 28,
       genreName: 'Action',
     };
@@ -166,7 +165,6 @@ describe('MovieListsService', () => {
       expect(movieListRepositoryMock.create).toHaveBeenCalledWith({
         name: createListDto.name,
         description: createListDto.description,
-        userId: createListDto.userId,
         genreId: createListDto.genreId,
         genreName: createListDto.genreName,
         movies: [],

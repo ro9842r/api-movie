@@ -3,7 +3,6 @@ import {
   IsString,
   IsNumber,
   IsOptional,
-  IsUUID,
   Min,
   Max,
 } from 'class-validator';
@@ -25,10 +24,6 @@ export class CreateMovieListDto {
   @IsString()
   @IsNotEmpty()
   genreName: string;
-
-  @IsUUID(4, { message: 'userId must be a valid UUID' })
-  @IsNotEmpty()
-  userId: string;
 }
 
 export class AddMovieToListDto {
