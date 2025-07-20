@@ -32,7 +32,7 @@ export class MovieListsService {
     return this.movieListRepository.save(newList);
   }
 
-  async findByUserId(
+  async getUserLists(
     options: IPaginationOptions,
   ): Promise<Pagination<MovieList>> {
     const queryBuilder =

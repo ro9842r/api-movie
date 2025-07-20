@@ -42,6 +42,6 @@ export class MovieListsController {
       page: paginationQuery.page || 1,
       limit: paginationQuery.limit || 10,
     };
-    return this.movieListsService.findByUserId(options);
+    return this.movieListsService.getUserLists(options);
   }
 }
