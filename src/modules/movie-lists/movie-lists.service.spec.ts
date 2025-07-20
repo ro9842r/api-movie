@@ -5,6 +5,7 @@ import { MovieListsService } from './movie-lists.service';
 import { MovieList } from './entities/movie-list.entity';
 import { MoviesService } from '@modules/movies/movies.service';
 import { CreateMovieListDto } from './dto/movie-list.dto';
+import { UserContext } from '../../auth/context/user.context';
 
 describe('MovieListsService', () => {
   let service: MovieListsService;
@@ -24,6 +25,11 @@ describe('MovieListsService', () => {
       getGenreById: jest.fn(),
     };
 
+    const mockUserContext = {
+      currentUserId: 'mock-user-id',
+      currentUser: { id: 'mock-user-id', email: 'test@example.com' },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MovieListsService,
@@ -34,6 +40,10 @@ describe('MovieListsService', () => {
         {
           provide: MoviesService,
           useValue: mockMoviesService,
+        },
+        {
+          provide: UserContext,
+          useValue: mockUserContext,
         },
       ],
     }).compile();
@@ -92,6 +102,7 @@ describe('MovieListsService', () => {
       );
       expect(movieListRepositoryMock.create).toHaveBeenCalledWith({
         ...createListDto,
+        userId: 'mock-user-id',
         movies: [],
       });
       expect(movieListRepositoryMock.save).toHaveBeenCalledWith(
@@ -134,6 +145,7 @@ describe('MovieListsService', () => {
       );
       expect(movieListRepositoryMock.create).toHaveBeenCalledWith({
         ...createListDto,
+        userId: 'mock-user-id',
         movies: [],
       });
       expect(movieListRepositoryMock.save).toHaveBeenCalledWith(
@@ -167,6 +179,7 @@ describe('MovieListsService', () => {
         description: createListDto.description,
         genreId: createListDto.genreId,
         genreName: createListDto.genreName,
+        userId: 'mock-user-id',
         movies: [],
       });
     });
