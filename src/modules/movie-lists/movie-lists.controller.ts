@@ -14,6 +14,7 @@ import {
   CreateMovieListDto,
   MovieListDto,
   PaginationQueryDto,
+  AddMovieToListDto,
 } from './dto/movie-list.dto';
 import { MovieList } from './entities/movie-list.entity';
 import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filter';
@@ -43,5 +44,12 @@ export class MovieListsController {
       limit: paginationQuery.limit || 10,
     };
     return this.movieListsService.getUserLists(options);
+  }
+
+  @Post('movie')
+  async addMovieToList(
+    @Body() addMovieDto: AddMovieToListDto,
+  ): Promise<MovieListDto> {
+    return this.movieListsService.addMovieToList(addMovieDto);
   }
 }

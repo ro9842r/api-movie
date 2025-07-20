@@ -23,6 +23,7 @@ describe('MovieListsService', () => {
 
     const mockMoviesService = {
       getGenreById: jest.fn(),
+      getMovieById: jest.fn(),
     };
 
     const mockUserContext = {
@@ -182,6 +183,179 @@ describe('MovieListsService', () => {
         userId: 'mock-user-id',
         movies: [],
       });
+    });
+  });
+
+  describe('addMovieToList', () => {
+    const listId = '456e7890-e89b-12d3-a456-426614174001';
+    const addMovieDto = { listId: listId, movieId: 123 };
+
+    const mockMovieList = {
+      id: listId,
+      name: 'Action Movies',
+      description: 'My favorite action movies',
+      genreId: 28,
+      genreName: 'Action',
+      userId: 'mock-user-id',
+      movies: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const mockMovieDetails = {
+      id: 123,
+      title: 'Test Movie',
+      genres: [
+        { id: 28, name: 'Action' },
+        { id: 12, name: 'Adventure' },
+      ],
+      overview: 'A test movie',
+      release_date: '2023-01-01',
+      vote_average: 8.5,
+      popularity: 100,
+    };
+
+    it('should add movie to list successfully', async () => {
+      // Arrange
+      movieListRepositoryMock.findOne.mockResolvedValue(mockMovieList as any);
+      moviesServiceMock.getMovieById.mockResolvedValue(mockMovieDetails as any);
+      const updatedList = {
+        ...mockMovieList,
+        movies: [{ movieId: 123, addedAt: expect.any(String) }],
+      };
+      movieListRepositoryMock.save.mockResolvedValue(updatedList as any);
+
+      // Act
+      const result = await service.addMovieToList(addMovieDto);
+
+      // Assert
+      expect(movieListRepositoryMock.findOne).toHaveBeenCalledWith({
+        where: { id: listId, userId: 'mock-user-id' },
+      });
+      expect(moviesServiceMock.getMovieById).toHaveBeenCalledWith(123);
+      expect(movieListRepositoryMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          movies: [{ movieId: 123, addedAt: expect.any(String) }],
+        }),
+      );
+      expect(result).toEqual(updatedList);
+    });
+
+    it('should throw error when movie list not found', async () => {
+      // Arrange
+      movieListRepositoryMock.findOne.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.addMovieToList(addMovieDto)).rejects.toThrow(
+        'Movie list not found',
+      );
+
+      expect(movieListRepositoryMock.findOne).toHaveBeenCalledWith({
+        where: { id: listId, userId: 'mock-user-id' },
+      });
+      expect(moviesServiceMock.getMovieById).not.toHaveBeenCalled();
+      expect(movieListRepositoryMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when movie does not belong to list genre', async () => {
+      // Arrange
+      const movieWithDifferentGenre = {
+        ...mockMovieDetails,
+        genres: [{ id: 35, name: 'Comedy' }], // Different genre
+      };
+      movieListRepositoryMock.findOne.mockResolvedValue(mockMovieList as any);
+      moviesServiceMock.getMovieById.mockResolvedValue(
+        movieWithDifferentGenre as any,
+      );
+
+      // Act & Assert
+      await expect(service.addMovieToList(addMovieDto)).rejects.toThrow(
+        'Movie does not belong to the genre "Action"',
+      );
+
+      expect(movieListRepositoryMock.findOne).toHaveBeenCalledWith({
+        where: { id: listId, userId: 'mock-user-id' },
+      });
+      expect(moviesServiceMock.getMovieById).toHaveBeenCalledWith(123);
+      expect(movieListRepositoryMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when movie is already in the list', async () => {
+      // Arrange
+      const listWithMovie = {
+        ...mockMovieList,
+        movies: [{ movieId: 123, addedAt: '2023-01-01T00:00:00.000Z' }],
+      };
+      movieListRepositoryMock.findOne.mockResolvedValue(listWithMovie as any);
+      moviesServiceMock.getMovieById.mockResolvedValue(mockMovieDetails as any);
+
+      // Act & Assert
+      await expect(service.addMovieToList(addMovieDto)).rejects.toThrow(
+        'Movie is already in this list',
+      );
+
+      expect(movieListRepositoryMock.findOne).toHaveBeenCalledWith({
+        where: { id: listId, userId: 'mock-user-id' },
+      });
+      expect(moviesServiceMock.getMovieById).toHaveBeenCalledWith(123);
+      expect(movieListRepositoryMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should handle movie API errors', async () => {
+      // Arrange
+      movieListRepositoryMock.findOne.mockResolvedValue(mockMovieList as any);
+      moviesServiceMock.getMovieById.mockRejectedValue(
+        new Error('Movie not found in TMDB'),
+      );
+
+      // Act & Assert
+      await expect(service.addMovieToList(addMovieDto)).rejects.toThrow(
+        'Movie not found in TMDB',
+      );
+
+      expect(movieListRepositoryMock.findOne).toHaveBeenCalledWith({
+        where: { id: listId, userId: 'mock-user-id' },
+      });
+      expect(moviesServiceMock.getMovieById).toHaveBeenCalledWith(123);
+      expect(movieListRepositoryMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should add movie to list with existing movies', async () => {
+      // Arrange
+      const listWithExistingMovies = {
+        ...mockMovieList,
+        movies: [
+          { movieId: 456, addedAt: '2023-01-01T00:00:00.000Z' },
+          { movieId: 789, addedAt: '2023-01-02T00:00:00.000Z' },
+        ],
+      };
+      movieListRepositoryMock.findOne.mockResolvedValue(
+        listWithExistingMovies as any,
+      );
+      moviesServiceMock.getMovieById.mockResolvedValue(mockMovieDetails as any);
+      const updatedList = {
+        ...listWithExistingMovies,
+        movies: [
+          ...listWithExistingMovies.movies,
+          { movieId: 123, addedAt: expect.any(String) },
+        ],
+      };
+      movieListRepositoryMock.save.mockResolvedValue(updatedList as any);
+
+      // Act
+      const result = await service.addMovieToList(addMovieDto);
+
+      // Assert
+      expect(movieListRepositoryMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          movies: [
+            { movieId: 456, addedAt: '2023-01-01T00:00:00.000Z' },
+            { movieId: 789, addedAt: '2023-01-02T00:00:00.000Z' },
+            { movieId: 123, addedAt: expect.any(String) },
+          ],
+        }),
+      );
+      expect(result).toEqual(updatedList);
     });
   });
 });

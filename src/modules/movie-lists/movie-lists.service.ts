@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -7,7 +7,11 @@ import {
   IPaginationOptions,
 } from 'nestjs-typeorm-paginate';
 import { MoviesService } from '@modules/movies/movies.service';
-import { CreateMovieListDto, MovieListDto } from './dto/movie-list.dto';
+import {
+  CreateMovieListDto,
+  MovieListDto,
+  AddMovieToListDto,
+} from './dto/movie-list.dto';
 import { MovieList } from './entities/movie-list.entity';
 import { UserContext } from '../../auth/context/user.context';
 
@@ -45,5 +49,57 @@ export class MovieListsService {
       .orderBy('movieList.createdAt', 'DESC');
 
     return paginate<MovieList>(queryBuilder, options);
+  }
+
+  async addMovieToList({
+    listId,
+    movieId,
+  }: AddMovieToListDto): Promise<MovieListDto> {
+    const movieList = await this.movieListRepository.findOne({
+      where: {
+        id: listId,
+        userId: this.userContext.currentUserId,
+      },
+    });
+
+    if (!movieList) {
+      throw new HttpException('Movie list not found', HttpStatus.NOT_FOUND);
+    }
+
+    const movieDetails = await this.moviesService.getMovieById(movieId);
+
+    const hasMatchingGenre = movieDetails.genres.some(
+      (genre) => genre.id === movieList.genreId,
+    );
+
+    if (!hasMatchingGenre) {
+      throw new HttpException(
+        `Movie does not belong to the genre "${movieList.genreName}"`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const movieAlreadyInList = movieList.movies.some(
+      (movie) => movie.movieId === movieId,
+    );
+
+    if (movieAlreadyInList) {
+      throw new HttpException(
+        'Movie is already in this list',
+        HttpStatus.CONFLICT,
+      );
+    }
+
+    const updatedMovies = [
+      ...movieList.movies,
+      {
+        movieId: movieId,
+        addedAt: new Date().toISOString(),
+      },
+    ];
+
+    movieList.movies = updatedMovies;
+
+    return this.movieListRepository.save(movieList);
   }
 }

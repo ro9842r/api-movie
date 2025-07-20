@@ -27,6 +27,10 @@ export class CreateMovieListDto {
 }
 
 export class AddMovieToListDto {
+  @IsString()
+  @IsNotEmpty()
+  listId: string;
+
   @Type(() => Number)
   @IsNumber()
   movieId: number;
