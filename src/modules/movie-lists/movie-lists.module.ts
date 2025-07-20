@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MovieListsController } from './movie-lists.controller';
 import { MovieListsService } from './movie-lists.service';
-import { MoviesModule } from '../movies/movie.module';
+import { MoviesModule } from '@modules/movies/movie.module';
 import { MovieList } from './entities/movie-list.entity';
 
 @Module({

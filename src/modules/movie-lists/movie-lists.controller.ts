@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { MovieListsService } from './movie-lists.service';
 import { CreateMovieListDto, MovieListDto } from './dto/movie-list.dto';
-import { DatabaseExceptionFilter } from '../../shared/filters/database-exception.filter';
-import { TransformInterceptor } from '../../shared/interceptors/transform.interceptor';
+import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filter';
+import { TransformInterceptor } from '@shared/interceptors/transform.interceptor';
 
 @Controller('movie-lists')
 @UseFilters(DatabaseExceptionFilter)

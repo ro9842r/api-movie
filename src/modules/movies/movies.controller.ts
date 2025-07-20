@@ -16,8 +16,8 @@ import {
   DiscoverMoviesDto,
   MovieDetailsDto,
 } from './dto/search-movie.dto';
-import { TransformInterceptor } from '../../shared/interceptors/transform.interceptor';
-import { DatabaseExceptionFilter } from '../../shared/filters/database-exception.filter';
+import { TransformInterceptor } from '@shared/interceptors/transform.interceptor';
+import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filter';
 
 @Controller('movies')
 @UseInterceptors(TransformInterceptor)

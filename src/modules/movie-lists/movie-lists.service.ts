@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MoviesService } from '../movies/movies.service';
+import { MoviesService } from '@modules/movies/movies.service';
 import { CreateMovieListDto, MovieListDto } from './dto/movie-list.dto';
 import { MovieList } from './entities/movie-list.entity';
 
