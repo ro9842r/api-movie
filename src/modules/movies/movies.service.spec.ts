@@ -151,6 +151,17 @@ describe('MoviesService', () => {
         params: { page: 2 },
       });
     });
+
+    it('should throw HttpException when popular movies request fails', async () => {
+      const errorResponse = {
+        response: { status: 500 },
+        message: 'Server error',
+      };
+
+      mockHttpService.get.mockReturnValue(throwError(() => errorResponse));
+
+      await expect(service.getPopularMovies(1)).rejects.toThrow(HttpException);
+    });
   });
 
   describe('getNowPlayingMovies', () => {
@@ -170,6 +181,19 @@ describe('MoviesService', () => {
       expect(mockHttpService.get).toHaveBeenCalledWith('/movie/now_playing', {
         params: { page: 1 },
       });
+    });
+
+    it('should throw HttpException when now playing movies request fails', async () => {
+      const errorResponse = {
+        response: { status: 404 },
+        message: 'Not found',
+      };
+
+      mockHttpService.get.mockReturnValue(throwError(() => errorResponse));
+
+      await expect(service.getNowPlayingMovies()).rejects.toThrow(
+        HttpException,
+      );
     });
   });
 
@@ -220,6 +244,20 @@ describe('MoviesService', () => {
       expect(mockHttpService.get).toHaveBeenCalledWith('/discover/movie', {
         params: { page: 2 },
       });
+    });
+
+    it('should throw HttpException when discover movies request fails', async () => {
+      const discoverDto: DiscoverMoviesDto = { page: 1 };
+      const errorResponse = {
+        response: { status: 403 },
+        message: 'Forbidden',
+      };
+
+      mockHttpService.get.mockReturnValue(throwError(() => errorResponse));
+
+      await expect(service.discoverMovies(discoverDto)).rejects.toThrow(
+        HttpException,
+      );
     });
   });
 
