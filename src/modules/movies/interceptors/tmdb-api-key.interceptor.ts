@@ -9,11 +9,10 @@ export class TmdbApiKeyInterceptor {
     config: InternalAxiosRequestConfig,
   ): InternalAxiosRequestConfig => {
     if (!config.params) {
-      config.params = {};
+      config.params = {} as Record<string, any>;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    config.params.api_key = this.apiKey;
+    (config.params as Record<string, any>).api_key = this.apiKey;
     return config;
   };
 }
