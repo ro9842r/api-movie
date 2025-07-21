@@ -15,7 +15,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Api Movie')
     .setDescription(
-      'API for managing movies, series, and actors. This API provides endpoints to create, read, update, and delete movie-related data.',
+      'API Movie is a comprehensive movie management system that allows users to search for movies, create personalized movie lists, and manage their movie collections. Built with modern technologies and following best practices for scalable and maintainable code.',
     )
     .setVersion('1.0')
     .addTag('ApiMovie')
