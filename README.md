@@ -65,7 +65,7 @@ API Movie is a comprehensive movie management system that allows users to search
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/ro9842r/api-movie.git
 cd api-movie
 
 # Install dependencies
