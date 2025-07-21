@@ -18,14 +18,25 @@ import {
 } from './dto/search-movie.dto';
 import { TransformInterceptor } from '@shared/interceptors/transform.interceptor';
 import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filter';
+import {
+  MoviesApiTags,
+  SearchMoviesApiDocs,
+  GetGenresApiDocs,
+  GetPopularMoviesApiDocs,
+  GetNowPlayingApiDocs,
+  DiscoverMoviesApiDocs,
+  GetMovieByIdApiDocs,
+} from './decorators';
 
 @Controller('movies')
 @UseInterceptors(TransformInterceptor)
 @UseFilters(DatabaseExceptionFilter)
+@MoviesApiTags()
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get('search')
+  @SearchMoviesApiDocs()
   async searchMoviesByName(
     @Query() searchParams: SearchMovieDto,
   ): Promise<SearchMovieResponseDto> {
@@ -33,11 +44,13 @@ export class MoviesController {
   }
 
   @Get('genres')
+  @GetGenresApiDocs()
   async getGenres(): Promise<GenresResponseDto> {
     return await this.moviesService.getGenres();
   }
 
   @Get('popular')
+  @GetPopularMoviesApiDocs()
   async getPopularMovies(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
   ): Promise<SearchMovieResponseDto> {
@@ -45,6 +58,7 @@ export class MoviesController {
   }
 
   @Get('now-playing')
+  @GetNowPlayingApiDocs()
   async getNowPlayingMovies(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
   ): Promise<SearchMovieResponseDto> {
@@ -52,6 +66,7 @@ export class MoviesController {
   }
 
   @Get('discover')
+  @DiscoverMoviesApiDocs()
   async discoverMovies(
     @Query() discoverParams: DiscoverMoviesDto,
   ): Promise<SearchMovieResponseDto> {
@@ -59,6 +74,7 @@ export class MoviesController {
   }
 
   @Get(':id')
+  @GetMovieByIdApiDocs()
   async getMovieById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<MovieDetailsDto> {
