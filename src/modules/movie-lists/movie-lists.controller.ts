@@ -28,11 +28,13 @@ import { MovieList } from './entities/movie-list.entity';
 import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filter';
 import { TransformInterceptor } from '@shared/interceptors/transform.interceptor';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { AuthRequired } from '../../auth/decorators';
 
 @UseGuards(JwtAuthGuard)
 @Controller('movie-lists')
 @UseFilters(DatabaseExceptionFilter)
 @UseInterceptors(TransformInterceptor)
+@AuthRequired()
 export class MovieListsController {
   constructor(private readonly movieListsService: MovieListsService) {}
 

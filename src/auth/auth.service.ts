@@ -1,14 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { SupabaseService } from './supabase/supabase.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, SignInResponseDto, LogoutResponseDto } from './dto';
 
 @Injectable()
 export class AuthService {
   constructor(private readonly supabase: SupabaseService) {}
 
-  async signIn({ email, password }: CreateUserDto): Promise<{
-    access_token: string;
-  }> {
+  async signIn({ email, password }: CreateUserDto): Promise<SignInResponseDto> {
     const {
       data: { session },
       error,
@@ -43,7 +41,7 @@ export class AuthService {
     }
   }
 
-  async logout(): Promise<{ message: string }> {
+  async logout(): Promise<LogoutResponseDto> {
     const { error } = await this.supabase.getClient().auth.signOut();
 
     if (error) {
