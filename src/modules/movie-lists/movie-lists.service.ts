@@ -11,6 +11,8 @@ import {
   CreateMovieListDto,
   MovieListDto,
   AddMovieToListDto,
+  UpdateMovieListDto,
+  RemoveMovieFromListDto,
 } from './dto/movie-list.dto';
 import { MovieList } from './entities/movie-list.entity';
 import { UserContext } from '../../auth/context/user.context';
@@ -35,7 +37,6 @@ export class MovieListsService {
 
     return this.movieListRepository.save(newList);
   }
-
   async getUserLists(
     options: IPaginationOptions,
   ): Promise<Pagination<MovieList>> {
@@ -48,7 +49,151 @@ export class MovieListsService {
       })
       .orderBy('movieList.createdAt', 'DESC');
 
-    return paginate<MovieList>(queryBuilder, options);
+    const paginatedResult = await paginate<MovieList>(queryBuilder, options);
+
+    const enrichedItems = await Promise.allSettled(
+      paginatedResult.items.map(async (movieList) =>
+        this.enrichMovieListWithDetails(movieList),
+      ),
+    );
+
+    const successfulItems = enrichedItems
+      .filter(
+        (result): result is PromiseFulfilledResult<MovieList> =>
+          result.status === 'fulfilled',
+      )
+      .map((result) => result.value);
+
+    return {
+      ...paginatedResult,
+      items: successfulItems,
+    };
+  }
+  private async enrichMovieListWithDetails(
+    movieList: MovieList,
+  ): Promise<MovieList> {
+    if (!movieList.movies?.length) {
+      return movieList;
+    }
+
+    const movieIds = movieList.movies.map((movie) => movie.movieId);
+
+    const movieDetailsResults = await Promise.allSettled(
+      movieIds.map((movieId) => this.moviesService.getMovieById(movieId)),
+    );
+
+    const moviesWithDetails = movieList.movies.map((movieItem, index) => {
+      const movieDetailResult = movieDetailsResults[index];
+
+      if (movieDetailResult.status === 'fulfilled') {
+        return {
+          ...movieItem,
+          movieDetails: movieDetailResult.value,
+        };
+      } else {
+        return {
+          ...movieItem,
+          movieDetails: null,
+        };
+      }
+    });
+
+    return {
+      ...movieList,
+      movies: moviesWithDetails,
+    };
+  }
+  async getMoviesByListId(listId: string): Promise<MovieList> {
+    const movieList = await this.movieListRepository.findOne({
+      where: {
+        id: listId,
+        userId: this.userContext.currentUserId,
+      },
+    });
+
+    if (!movieList) {
+      throw new HttpException('Movie list not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.enrichMovieListWithDetails(movieList);
+  }
+  async deleteList(listId: string): Promise<void> {
+    const movieList = await this.movieListRepository.findOne({
+      where: {
+        id: listId,
+        userId: this.userContext.currentUserId,
+      },
+    });
+
+    if (!movieList) {
+      throw new HttpException('Movie list not found', HttpStatus.NOT_FOUND);
+    }
+
+    await this.movieListRepository.remove(movieList);
+  }
+  async updateList(
+    listId: string,
+    updateListDto: UpdateMovieListDto,
+  ): Promise<MovieListDto> {
+    const movieList = await this.movieListRepository.findOne({
+      where: {
+        id: listId,
+        userId: this.userContext.currentUserId,
+      },
+    });
+
+    if (!movieList) {
+      throw new HttpException('Movie list not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (updateListDto.name) {
+      movieList.name = updateListDto.name;
+    }
+
+    if (updateListDto.description !== undefined) {
+      movieList.description = updateListDto.description;
+    }
+
+    const updatedList = await this.movieListRepository.save(movieList);
+
+    return updatedList;
+  }
+
+  async removeMovieFromList({
+    listId,
+    movieId,
+  }: RemoveMovieFromListDto): Promise<MovieListDto> {
+    const movieList = await this.movieListRepository.findOne({
+      where: {
+        id: listId,
+        userId: this.userContext.currentUserId,
+      },
+    });
+
+    if (!movieList) {
+      throw new HttpException('Movie list not found', HttpStatus.NOT_FOUND);
+    }
+
+    const movieIndex = movieList.movies.findIndex(
+      (movie) => movie.movieId === movieId,
+    );
+
+    if (movieIndex === -1) {
+      throw new HttpException(
+        'Movie not found in this list',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const updatedMovies = movieList.movies.filter(
+      (movie) => movie.movieId !== movieId,
+    );
+
+    movieList.movies = updatedMovies;
+
+    const updatedList = await this.movieListRepository.save(movieList);
+
+    return updatedList;
   }
 
   async addMovieToList({

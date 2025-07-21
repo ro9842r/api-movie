@@ -2,11 +2,17 @@ import {
   Controller,
   Post,
   Get,
+  Delete,
+  Patch,
   Body,
   Query,
+  Param,
   UseFilters,
   UseInterceptors,
   UseGuards,
+  ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { MovieListsService } from './movie-lists.service';
@@ -15,6 +21,8 @@ import {
   MovieListDto,
   PaginationQueryDto,
   AddMovieToListDto,
+  UpdateMovieListDto,
+  RemoveMovieFromListDto,
 } from './dto/movie-list.dto';
 import { MovieList } from './entities/movie-list.entity';
 import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filter';
@@ -51,5 +59,33 @@ export class MovieListsController {
     @Body() addMovieDto: AddMovieToListDto,
   ): Promise<MovieListDto> {
     return this.movieListsService.addMovieToList(addMovieDto);
+  }
+
+  @Get(':id')
+  async getMoviesByListId(
+    @Param('id', ParseUUIDPipe) listId: string,
+  ): Promise<MovieList> {
+    return this.movieListsService.getMoviesByListId(listId);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteList(@Param('id', ParseUUIDPipe) listId: string): Promise<void> {
+    return this.movieListsService.deleteList(listId);
+  }
+
+  @Patch(':id')
+  async updateList(
+    @Param('id', ParseUUIDPipe) listId: string,
+    @Body() updateListDto: UpdateMovieListDto,
+  ): Promise<MovieListDto> {
+    return this.movieListsService.updateList(listId, updateListDto);
+  }
+
+  @Delete('movie')
+  async removeMovieFromList(
+    @Body() removeMovieDto: RemoveMovieFromListDto,
+  ): Promise<MovieListDto> {
+    return this.movieListsService.removeMovieFromList(removeMovieDto);
   }
 }

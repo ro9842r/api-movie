@@ -19,6 +19,8 @@ describe('MovieListsService', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       delete: jest.fn(),
+      remove: jest.fn(),
+      createQueryBuilder: jest.fn(),
     };
 
     const mockMoviesService = {

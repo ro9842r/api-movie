@@ -36,9 +36,39 @@ export class AddMovieToListDto {
   movieId: number;
 }
 
+export class UpdateMovieListDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+}
+
+export class RemoveMovieFromListDto {
+  @IsString()
+  @IsNotEmpty()
+  listId: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  movieId: number;
+}
+
 export class MovieListItemDto {
   movieId: number;
   addedAt: string;
+  movieDetails?: {
+    id: number;
+    title: string;
+    overview: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+    release_date: string;
+    vote_average: number;
+    genres: Array<{ id: number; name: string }>;
+  } | null;
 }
 
 export class MovieListDto {
