@@ -29,16 +29,28 @@ import { DatabaseExceptionFilter } from '@shared/filters/database-exception.filt
 import { TransformInterceptor } from '@shared/interceptors/transform.interceptor';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AuthRequired } from '../../auth/decorators';
+import {
+  MovieListsApiTags,
+  CreateListApiDocs,
+  GetMyListsApiDocs,
+  AddMovieToListApiDocs,
+  GetMoviesByListIdApiDocs,
+  DeleteListApiDocs,
+  UpdateListApiDocs,
+  RemoveMovieFromListApiDocs,
+} from './decorators';
 
 @UseGuards(JwtAuthGuard)
 @Controller('movie-lists')
 @UseFilters(DatabaseExceptionFilter)
 @UseInterceptors(TransformInterceptor)
 @AuthRequired()
+@MovieListsApiTags()
 export class MovieListsController {
   constructor(private readonly movieListsService: MovieListsService) {}
 
   @Post()
+  @CreateListApiDocs()
   async createList(
     @Body() createListDto: CreateMovieListDto,
   ): Promise<MovieListDto> {
@@ -46,6 +58,7 @@ export class MovieListsController {
   }
 
   @Get()
+  @GetMyListsApiDocs()
   async findMyLists(
     @Query() paginationQuery: PaginationQueryDto,
   ): Promise<Pagination<MovieList>> {
@@ -57,6 +70,7 @@ export class MovieListsController {
   }
 
   @Post('movie')
+  @AddMovieToListApiDocs()
   async addMovieToList(
     @Body() addMovieDto: AddMovieToListDto,
   ): Promise<MovieListDto> {
@@ -64,6 +78,7 @@ export class MovieListsController {
   }
 
   @Get(':id')
+  @GetMoviesByListIdApiDocs()
   async getMoviesByListId(
     @Param('id', ParseUUIDPipe) listId: string,
   ): Promise<MovieList> {
@@ -72,11 +87,13 @@ export class MovieListsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteListApiDocs()
   async deleteList(@Param('id', ParseUUIDPipe) listId: string): Promise<void> {
     return this.movieListsService.deleteList(listId);
   }
 
   @Patch(':id')
+  @UpdateListApiDocs()
   async updateList(
     @Param('id', ParseUUIDPipe) listId: string,
     @Body() updateListDto: UpdateMovieListDto,
@@ -85,6 +102,7 @@ export class MovieListsController {
   }
 
   @Delete('movie')
+  @RemoveMovieFromListApiDocs()
   async removeMovieFromList(
     @Body() removeMovieDto: RemoveMovieFromListDto,
   ): Promise<MovieListDto> {
