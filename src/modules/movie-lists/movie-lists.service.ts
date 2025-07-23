@@ -211,7 +211,8 @@ export class MovieListsService {
       throw new HttpException('Movie list not found', HttpStatus.NOT_FOUND);
     }
 
-    const movieDetails = await this.moviesService.getMovieById(movieId);
+    /**
+     * const movieDetails = await this.moviesService.getMovieById(movieId);
 
     const hasMatchingGenre = movieDetails.genres.some(
       (genre) => genre.id === movieList.genreId,
@@ -235,6 +236,7 @@ export class MovieListsService {
       );
     }
 
+     * / */
     const updatedMovies = [
       ...movieList.movies,
       {
